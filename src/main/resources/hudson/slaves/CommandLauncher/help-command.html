@@ -22,13 +22,13 @@ exec java -jar ~/bin/agent.jar
 
   <p>
   You can use any command to run a process on the agent machine, such as RSH,
-  as long as stdin/stdout of this process will be connected to
-  "java -jar ~/bin/agent.jar" eventually.
+  as long as stdin/stdout of the process on the master will be connected to
+  those of "java -jar ~/bin/agent.jar" on the agent machine eventually.
 
   <p>
   In a larger deployment, it is also worth considering to load <tt>agent.jar</tt> from
-  a NFS-mounted common location, so that you don't have to update this file every time
-  you update Jenkins.
+  a NFS-mounted common location, so that you don't have to update this file 
+  on every agent machines every time you update Jenkins.
 
   <p>
   Setting this to "ssh -v <i>hostname</i>" may be useful for debugging connectivity
