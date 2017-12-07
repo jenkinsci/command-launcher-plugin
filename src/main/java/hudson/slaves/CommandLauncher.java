@@ -25,29 +25,27 @@ package hudson.slaves;
 
 import hudson.AbortException;
 import hudson.EnvVars;
-import hudson.Util;
 import hudson.Extension;
 import hudson.Functions;
+import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
-import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
-import hudson.util.StreamCopyThread;
 import hudson.util.FormValidation;
 import hudson.util.ProcessTree;
-
+import hudson.util.StreamCopyThread;
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.command_launcher.SystemCommandLanguage;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
+import org.jenkinsci.plugins.scriptsecurity.scripts.languages.SystemCommandLanguage;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 

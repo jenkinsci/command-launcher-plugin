@@ -31,9 +31,9 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.command_launcher.Messages;
-import org.jenkinsci.plugins.command_launcher.SystemCommandLanguage;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
+import org.jenkinsci.plugins.scriptsecurity.scripts.languages.SystemCommandLanguage;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
