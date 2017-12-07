@@ -45,7 +45,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>script-security</artifactId>
-            <version>1.36-20171108.162724-1</version> <!-- TODO https://github.com/jenkinsci/script-security-plugin/pull/165 -->
+            <version>1.36</version>
         </dependency>
     </dependencies>
 </project>
