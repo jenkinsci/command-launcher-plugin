@@ -32,6 +32,7 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Scanner;
@@ -90,7 +91,7 @@ public class CommandLauncherTest {
 
     @Test
     public void hasEnvVarWorkspace() throws Exception {
-        String workspacePath = j.createTmpDir().getPath();
+        String workspacePath = createWorkspace();
         hasEnvVar("WORKSPACE", workspacePath, workspacePath);
     }
 
@@ -128,10 +129,15 @@ public class CommandLauncherTest {
         assertEquals(value, content);
     }
 
+    private String createWorkspace() throws IOException {
+        File tempDir = temporaryFolder.newFolder();
+        return tempDir.getAbsolutePath();
+    }
+
     public DumbSlave createSlave(String command, String workspacePath) throws Exception {
         DumbSlave slave;
         if (workspacePath == null)
-            workspacePath = j.createTmpDir().getPath();
+            workspacePath = createWorkspace();
 
         synchronized (j.jenkins) { // TODO this lock smells like a bug post 1.607
             slave = new DumbSlave(
