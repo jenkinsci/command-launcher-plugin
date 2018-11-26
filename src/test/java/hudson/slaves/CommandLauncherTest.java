@@ -25,7 +25,6 @@ package hudson.slaves;
 
 import hudson.EnvVars;
 import hudson.Functions;
-import hudson.model.Node;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -34,7 +33,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -140,17 +138,7 @@ public class CommandLauncherTest {
             workspacePath = createWorkspace();
 
         synchronized (j.jenkins) { // TODO this lock smells like a bug post 1.607
-            slave = new DumbSlave(
-                    "dummy",
-                    "dummy",
-                    workspacePath,
-                    "1",
-                    Node.Mode.NORMAL,
-                    "",
-                    new CommandLauncher(command),
-                    RetentionStrategy.NOOP,
-                    Collections.EMPTY_LIST
-            );
+            slave = new DumbSlave("dummy", workspacePath, new CommandLauncher(command));
             j.jenkins.addNode(slave);
         }
         return slave;
