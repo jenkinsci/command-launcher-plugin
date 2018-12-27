@@ -68,7 +68,12 @@ public class CommandLauncher extends ComputerLauncher {
      */
     private final EnvVars env;
 
-    /** Constructor for use from UI. Conditionally approves the script. */
+    /** Constructor for use from UI. Conditionally approves the script.
+     *
+     * @param command  the command to run pending approval
+     *
+     * @see #CommandLauncher(String command, EnvVars env)
+     */
     @DataBoundConstructor
     public CommandLauncher(String command) {
         agentCommand = command;
@@ -77,7 +82,13 @@ public class CommandLauncher extends ComputerLauncher {
         ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser());
     }
 
-    /** Constructor for programmatic use. Always approves the script. */
+    /** Constructor for programmatic use. Always approves the script.
+     *
+     * @param command   the single command to run; note: this can't be a shell statement
+     *                  (e.g. "echo foo &gt; bar; baz" -- if you need to do that, either use
+     *                  "sh -c" or write the expression into a script and point to the script)
+     * @param env       environment variables for the launcher to include when it runs the command
+     */
     public CommandLauncher(String command, EnvVars env) {
     	this.agentCommand = command;
     	this.env = env;
