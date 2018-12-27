@@ -27,17 +27,19 @@ import hudson.Functions;
 import hudson.model.Node;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import java.io.File;
 import java.util.Collections;
+import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 public class CommandLauncherTest {
@@ -68,13 +70,57 @@ public class CommandLauncherTest {
         assertThat(log, containsString("ERROR: Process terminated with exit code 0"));
     }
 
-    public DumbSlave createSlave(String command) throws Exception {
+    private static void connectToComputer(DumbSlave slave) {
+        try {
+            slave.toComputer().connect(false).get();
+        } catch (Exception e) {
+        }
+    }
+
+    @Test
+    public void hasEnvVarWorkspace() throws Exception {
+        String workspacePath = j.createTmpDir().getPath();
+        hasEnvVar("WORKSPACE", workspacePath, workspacePath);
+    }
+
+    @Test
+    public void hasEnvVarJenkinsUrl() throws Exception {
+        String url = j.jenkins.getRootUrl();
+        hasEnvVar("HUDSON_URL", url, null);
+        hasEnvVar("JENKINS_URL", url, null);
+    }
+
+    @Test
+    public void hasEnvVarAgentUrl() throws Exception {
+        String url = j.jenkins.getRootUrl()+"/jnlpJars/agent.jar";
+        hasEnvVar("SLAVEJAR_URL", url, null);
+        hasEnvVar("AGENTJAR_URL", url, null);
+    }
+
+    private void hasEnvVar(String name, String value, String workspacePath) throws Exception {
+        TemporaryFolder temporaryFolder = new TemporaryFolder();
+        temporaryFolder.create();
+        File canary = temporaryFolder.newFile();
+
+        DumbSlave slave = createSlave("sh -c 'echo $" + name +" > " + canary.getAbsolutePath() + "'",
+                workspacePath);
+        connectToComputer(slave);
+        String content = new Scanner(canary).useDelimiter("\\Z").next();
+        j.jenkins.removeNode(slave);
+        assertEquals(value, content);
+        temporaryFolder.delete();
+    }
+
+    public DumbSlave createSlave(String command, String workspacePath) throws Exception {
         DumbSlave slave;
+        if (workspacePath == null)
+            workspacePath = j.createTmpDir().getPath();
+
         synchronized (j.jenkins) { // TODO this lock smells like a bug post 1.607
             slave = new DumbSlave(
                     "dummy",
                     "dummy",
-                    j.createTmpDir().getPath(),
+                    workspacePath,
                     "1",
                     Node.Mode.NORMAL,
                     "",
@@ -88,7 +134,7 @@ public class CommandLauncherTest {
     }
 
     public DumbSlave createSlaveTimeout(String command) throws Exception {
-        DumbSlave slave = createSlave(command);
+        DumbSlave slave = createSlave(command, null);
 
         try {
             slave.toComputer().connect(false).get(1, TimeUnit.SECONDS);
