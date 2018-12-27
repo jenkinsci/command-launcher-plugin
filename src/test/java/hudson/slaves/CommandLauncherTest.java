@@ -23,22 +23,22 @@
  */
 package hudson.slaves;
 
+import hudson.Functions;
+import hudson.model.Node;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+
+import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
-import hudson.Functions;
-import hudson.model.Node;
-
-import java.util.Collections;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
 
 public class CommandLauncherTest {
 
@@ -49,7 +49,7 @@ public class CommandLauncherTest {
     // TODO sometimes gets EOFException as in commandSucceedsWithoutChannel
     public void commandFails() throws Exception {
         assumeTrue(!Functions.isWindows());
-        DumbSlave slave = createSlave("false");
+        DumbSlave slave = createSlaveTimeout("false");
 
         String log = slave.toComputer().getLog();
         assertTrue(log, slave.toComputer().isOffline());
@@ -61,7 +61,7 @@ public class CommandLauncherTest {
     @Test
     public void commandSucceedsWithoutChannel() throws Exception {
         assumeTrue(!Functions.isWindows());
-        DumbSlave slave = createSlave("true");
+        DumbSlave slave = createSlaveTimeout("true");
 
         String log = slave.toComputer().getLog();
         assertTrue(log, slave.toComputer().isOffline());
@@ -84,6 +84,11 @@ public class CommandLauncherTest {
             );
             j.jenkins.addNode(slave);
         }
+        return slave;
+    }
+
+    public DumbSlave createSlaveTimeout(String command) throws Exception {
+        DumbSlave slave = createSlave(command);
 
         try {
             slave.toComputer().connect(false).get(1, TimeUnit.SECONDS);
