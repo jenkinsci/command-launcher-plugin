@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import hudson.EnvVars;
 import hudson.Functions;
 import hudson.model.Node;
 import org.junit.Rule;
@@ -31,6 +32,7 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
@@ -46,6 +48,9 @@ public class CommandLauncherTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
     // TODO sometimes gets EOFException as in commandSucceedsWithoutChannel
@@ -78,6 +83,11 @@ public class CommandLauncherTest {
     }
 
     @Test
+    public void hasEnvVarNodeName() throws Exception {
+        hasEnvVar("NODE_NAME", "dummy", null);
+    }
+
+    @Test
     public void hasEnvVarWorkspace() throws Exception {
         String workspacePath = j.createTmpDir().getPath();
         hasEnvVar("WORKSPACE", workspacePath, workspacePath);
@@ -97,18 +107,24 @@ public class CommandLauncherTest {
         hasEnvVar("AGENTJAR_URL", url, null);
     }
 
+    private static MessageFormat windowsCommand = new MessageFormat("{0} /c \"echo %{1}%> {2}\"");
+    private static MessageFormat posixCommand = new MessageFormat("sh -c \"echo ${1}> {2}\"");
     private void hasEnvVar(String name, String value, String workspacePath) throws Exception {
-        TemporaryFolder temporaryFolder = new TemporaryFolder();
-        temporaryFolder.create();
         File canary = temporaryFolder.newFile();
+        String command;
+        String shell = EnvVars.masterEnvVars.get("comspec");
+        Object[] args = {shell, name, canary.getAbsolutePath()};
+        if (shell != null) {
+            command = windowsCommand.format(args);
+        } else {
+            command = posixCommand.format(args);
+        }
 
-        DumbSlave slave = createSlave("sh -c 'echo $" + name +" > " + canary.getAbsolutePath() + "'",
-                workspacePath);
+        DumbSlave slave = createSlave(command, workspacePath);
         connectToComputer(slave);
         String content = new Scanner(canary).useDelimiter("\\Z").next();
         j.jenkins.removeNode(slave);
         assertEquals(value, content);
-        temporaryFolder.delete();
     }
 
     public DumbSlave createSlave(String command, String workspacePath) throws Exception {
