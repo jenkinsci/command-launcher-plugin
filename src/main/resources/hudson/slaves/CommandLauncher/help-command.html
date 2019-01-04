@@ -1,5 +1,5 @@
 <div>
-  Command to be used to launch an agent program, which controls the agent
+  Single command to launch an agent program, which controls the agent
   computer and communicates with the master. Jenkins assumes that
   the executed program launches the <code>agent.jar</code> program on the correct
   machine.
@@ -14,7 +14,13 @@
   </p>
 
   <p>
-    However, it is often a good idea to write a small shell script, like the following, on an agent
+    Note: the command can't rely on a shell to parse things, e.g. <code>echo foo &gt; bar; baz</code>.
+    If you need to do that, either use
+    <code>sh -c</code> or write the expression into a script and point to the script.
+  </p>
+
+  <p>
+    It is often a good idea to write a small shell script, like the following, on an agent
     so that you can control the location of Java and/or agent.jar, as well as set up any
     environment variables specific to this node, such as PATH.
   </p>
