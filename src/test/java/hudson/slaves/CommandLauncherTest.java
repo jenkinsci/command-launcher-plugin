@@ -23,33 +23,40 @@
  */
 package hudson.slaves;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import hudson.EnvVars;
 import hudson.Functions;
 import hudson.model.Node;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.JenkinsRule;
 
+import java.io.File;
+import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 public class CommandLauncherTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Test
     // TODO sometimes gets EOFException as in commandSucceedsWithoutChannel
     public void commandFails() throws Exception {
         assumeTrue(!Functions.isWindows());
-        DumbSlave slave = createSlave("false");
+        DumbSlave slave = createSlaveTimeout("false");
 
         String log = slave.toComputer().getLog();
         assertTrue(log, slave.toComputer().isOffline());
@@ -61,20 +68,76 @@ public class CommandLauncherTest {
     @Test
     public void commandSucceedsWithoutChannel() throws Exception {
         assumeTrue(!Functions.isWindows());
-        DumbSlave slave = createSlave("true");
+        DumbSlave slave = createSlaveTimeout("true");
 
         String log = slave.toComputer().getLog();
         assertTrue(log, slave.toComputer().isOffline());
         assertThat(log, containsString("ERROR: Process terminated with exit code 0"));
     }
 
-    public DumbSlave createSlave(String command) throws Exception {
+    private static void connectToComputer(DumbSlave slave) {
+        try {
+            slave.toComputer().connect(false).get();
+        } catch (Exception e) {
+            System.err.println("uninteresting error (not running an actual agent.jar): " + e);
+        }
+    }
+
+    @Test
+    public void hasEnvVarNodeName() throws Exception {
+        hasEnvVar("NODE_NAME", "dummy", null);
+    }
+
+    @Test
+    public void hasEnvVarWorkspace() throws Exception {
+        String workspacePath = j.createTmpDir().getPath();
+        hasEnvVar("WORKSPACE", workspacePath, workspacePath);
+    }
+
+    @Test
+    public void hasEnvVarJenkinsUrl() throws Exception {
+        String url = j.jenkins.getRootUrl();
+        hasEnvVar("HUDSON_URL", url, null);
+        hasEnvVar("JENKINS_URL", url, null);
+    }
+
+    @Test
+    public void hasEnvVarAgentUrl() throws Exception {
+        String url = j.jenkins.getRootUrl()+"/jnlpJars/agent.jar";
+        hasEnvVar("SLAVEJAR_URL", url, null);
+        hasEnvVar("AGENTJAR_URL", url, null);
+    }
+
+    private static MessageFormat windowsCommand = new MessageFormat("{0} /c \"echo %{1}%> {2}\"");
+    private static MessageFormat posixCommand = new MessageFormat("sh -c \"echo ${1}> {2}\"");
+    private void hasEnvVar(String name, String value, String workspacePath) throws Exception {
+        File canary = temporaryFolder.newFile();
+        String command;
+        String shell = EnvVars.masterEnvVars.get("comspec");
+        Object[] args = {shell, name, canary.getAbsolutePath()};
+        if (shell != null) {
+            command = windowsCommand.format(args);
+        } else {
+            command = posixCommand.format(args);
+        }
+
+        DumbSlave slave = createSlave(command, workspacePath);
+        connectToComputer(slave);
+        String content = new Scanner(canary).useDelimiter("\\Z").next();
+        j.jenkins.removeNode(slave);
+        assertEquals(value, content);
+    }
+
+    public DumbSlave createSlave(String command, String workspacePath) throws Exception {
         DumbSlave slave;
+        if (workspacePath == null)
+            workspacePath = j.createTmpDir().getPath();
+
         synchronized (j.jenkins) { // TODO this lock smells like a bug post 1.607
             slave = new DumbSlave(
                     "dummy",
                     "dummy",
-                    j.createTmpDir().getPath(),
+                    workspacePath,
                     "1",
                     Node.Mode.NORMAL,
                     "",
@@ -84,6 +147,11 @@ public class CommandLauncherTest {
             );
             j.jenkins.addNode(slave);
         }
+        return slave;
+    }
+
+    public DumbSlave createSlaveTimeout(String command) throws Exception {
+        DumbSlave slave = createSlave(command, null);
 
         try {
             slave.toComputer().connect(false).get(1, TimeUnit.SECONDS);

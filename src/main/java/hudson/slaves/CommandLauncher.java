@@ -130,6 +130,7 @@ public class CommandLauncher extends ComputerLauncher {
             pb.environment().put("WORKSPACE", StringUtils.defaultString(computer.getAbsoluteRemoteFs(), node.getRemoteFS())); //path for local slave log
 
             {// system defined variables
+                pb.environment().put("NODE_NAME", computer.getName());
                 String rootUrl = Jenkins.getInstance().getRootUrl();
                 if (rootUrl!=null) {
                     pb.environment().put("HUDSON_URL", rootUrl);    // for backward compatibility
