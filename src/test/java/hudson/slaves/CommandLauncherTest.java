@@ -79,6 +79,7 @@ public class CommandLauncherTest {
         try {
             slave.toComputer().connect(false).get();
         } catch (Exception e) {
+            System.err.println("uninteresting error (not running an actual agent.jar): " + e);
         }
     }
 
