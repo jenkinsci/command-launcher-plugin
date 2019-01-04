@@ -1,19 +1,22 @@
 <div>
   Command to be used to launch an agent program, which controls the agent
   computer and communicates with the master. Jenkins assumes that
-  the executed program launches the <tt>agent.jar</tt> program on the correct
+  the executed program launches the <code>agent.jar</code> program on the correct
   machine.
 
   <p>
-  A copy of <tt>agent.jar</tt> can be downloaded from <a href="${rootURL}/jnlpJars/agent.jar"><tt>here</tt></a>.
+  A copy of <code>agent.jar</code> can be downloaded from <a href="${rootURL}/jnlpJars/agent.jar">here</a>.
+  </p>
 
   <p>
   In a simple case, this could be
-  something like "ssh <i>hostname</i> java -jar ~/bin/agent.jar".
+  something like <code>ssh <i>hostname</i> java -jar ~/bin/agent.jar</code>.
+  </p>
 
   However, it is often a good idea to write a small shell script, like the following, on an agent
   so that you can control the location of Java and/or agent.jar, as well as set up any
   environment variables specific to this node, such as PATH.
+  </p>
 
 <pre>
 #!/bin/sh
@@ -23,14 +26,17 @@ exec java -jar ~/bin/agent.jar
   <p>
   You can use any command to run a process on the agent machine, such as RSH,
   as long as stdin/stdout of the process on the master will be connected to
-  those of "java -jar ~/bin/agent.jar" on the agent machine eventually.
+  those of <code>java -jar ~/bin/agent.jar</code> on the agent machine eventually.
+  </p>
 
   <p>
-  In a larger deployment, it is also worth considering to load <tt>agent.jar</tt> from
+  In a larger deployment, it is also worth considering to load <code>agent.jar</code> from
   a NFS-mounted common location, so that you don't have to update this file 
   on every agent machines every time you update Jenkins.
+  </p>
 
   <p>
-  Setting this to "ssh -v <i>hostname</i>" may be useful for debugging connectivity
+  Setting this to <code>ssh -v <i>hostname</i></code> may be useful for debugging connectivity
   issue.
+  </p>
 </div>
