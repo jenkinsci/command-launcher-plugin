@@ -25,15 +25,14 @@ package hudson.slaves;
 
 import hudson.EnvVars;
 import hudson.Functions;
-import hudson.model.Node;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -90,7 +89,7 @@ public class CommandLauncherTest {
 
     @Test
     public void hasEnvVarWorkspace() throws Exception {
-        String workspacePath = j.createTmpDir().getPath();
+        String workspacePath = createWorkspace();
         hasEnvVar("WORKSPACE", workspacePath, workspacePath);
     }
 
@@ -128,23 +127,18 @@ public class CommandLauncherTest {
         assertEquals(value, content);
     }
 
+    private String createWorkspace() throws IOException {
+        File tempDir = temporaryFolder.newFolder();
+        return tempDir.getAbsolutePath();
+    }
+
     public DumbSlave createSlave(String command, String workspacePath) throws Exception {
         DumbSlave slave;
         if (workspacePath == null)
-            workspacePath = j.createTmpDir().getPath();
+            workspacePath = createWorkspace();
 
         synchronized (j.jenkins) { // TODO this lock smells like a bug post 1.607
-            slave = new DumbSlave(
-                    "dummy",
-                    "dummy",
-                    workspacePath,
-                    "1",
-                    Node.Mode.NORMAL,
-                    "",
-                    new CommandLauncher(command),
-                    RetentionStrategy.NOOP,
-                    Collections.EMPTY_LIST
-            );
+            slave = new DumbSlave("dummy", workspacePath, new CommandLauncher(command));
             j.jenkins.addNode(slave);
         }
         return slave;
