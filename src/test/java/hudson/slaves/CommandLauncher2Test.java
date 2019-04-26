@@ -141,7 +141,6 @@ public class CommandLauncher2Test {
                 pendingScripts = ScriptApproval.get().getPendingScripts();
                 assertThat(pendingScripts.size(), greaterThan(0));
                 assertPendingScript(pendingScripts, "echo CLI ATTACK");
-                ScriptApproval.get().denyScript(pendingScript.getHash());
                 assertSerialForm(s, "echo CLI ATTACK");
                 // Now also check that SYSTEM deserialization works after a restart.
             }
