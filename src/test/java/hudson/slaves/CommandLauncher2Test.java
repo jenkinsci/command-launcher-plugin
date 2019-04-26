@@ -129,12 +129,9 @@ public class CommandLauncher2Test {
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertEquals("echo REST ATTACK", ((CommandLauncher) s.getLauncher()).getCommand());
                 pendingScripts = ScriptApproval.get().getPendingScripts();
-                assertEquals(1, pendingScripts.size());
-                pendingScript = pendingScripts.iterator().next();
-                assertEquals(SystemCommandLanguage.get(), pendingScript.getLanguage());
-                assertEquals("echo REST ATTACK", pendingScript.script);
-                assertEquals(/* deserialization, not recording user */ null, pendingScript.getContext().getUser());
-                ScriptApproval.get().denyScript(pendingScript.getHash());
+                assertEquals(2, pendingScripts.size());
+                assertPendingScript(pendingScripts, "echo REST ATTACK");
+                assertPendingScript(pendingScripts, "echo GUI ATTACK");
                 assertSerialForm(s, "echo REST ATTACK");
                 // Then by CLI.
                 cmd = new UpdateNodeCommand();
@@ -143,11 +140,9 @@ public class CommandLauncher2Test {
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertEquals("echo CLI ATTACK", ((CommandLauncher) s.getLauncher()).getCommand());
                 pendingScripts = ScriptApproval.get().getPendingScripts();
-                assertEquals(1, pendingScripts.size());
-                pendingScript = pendingScripts.iterator().next();
-                assertEquals(SystemCommandLanguage.get(), pendingScript.getLanguage());
-                assertEquals("echo CLI ATTACK", pendingScript.script);
-                assertEquals(/* ditto */null, pendingScript.getContext().getUser());
+                assertEquals(2, pendingScripts.size());
+                assertPendingScript(pendingScripts, "echo CLI ATTACK");
+                assertPendingScript(pendingScripts, "echo REST ATTACK");
                 ScriptApproval.get().denyScript(pendingScript.getHash());
                 assertSerialForm(s, "echo CLI ATTACK");
                 // Now also check that SYSTEM deserialization works after a restart.
@@ -157,6 +152,18 @@ public class CommandLauncher2Test {
                 File nodesDir = new File(rr.j.jenkins.getRootDir(), "nodes");
                 XmlFile configXml = new XmlFile(Jenkins.XSTREAM, new File(new File(nodesDir, s.getNodeName()), "config.xml"));
                 assertThat(configXml.asString(), expectedCommand != null ? containsString("<agentCommand>" + expectedCommand + "</agentCommand>") : not(containsString("<agentCommand>")));
+            }
+            private void assertPendingScript(Set<ScriptApproval.PendingScript> pendingScripts, String script) throws IOException {
+                for (ScriptApproval.PendingScript pendingScript : pendingScripts) {
+                    if (pendingScript.script.equals(script)) {
+                        assertEquals(SystemCommandLanguage.get(), pendingScript.getLanguage());
+                        assertEquals(script, pendingScript.script);
+                        assertEquals(/* deserialization, not recording user */ null, pendingScript.getContext().getUser());
+                        ScriptApproval.get().denyScript(pendingScript.getHash());
+                        return;
+                    }
+                }
+                fail("Did not find expected script: " + script);
             }
         });
         rr.addStep(new Statement() {
