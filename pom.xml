@@ -16,7 +16,7 @@
     </properties>
     <name>Command Agent Launcher Plugin</name>
     <description>Allows agents to be launched using a specified command.</description>
-    <url>https://wiki.jenkins.io/display/JENKINS/Command+Agent+Launcher+Plugin</url>
+    <url>https://github.com/jenkinsci/command-launcher-plugin</url>
     <licenses>
         <license>
             <name>MIT License</name>
