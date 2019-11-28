@@ -1,5 +1,9 @@
 ## Changelog
 
+### Newer versions
+
+See [GitHub Releases](https://github.com/jenkinsci/command-launcher-plugin/releases).
+
 ### 1.3
 
 Release date: (2019-01-04)
