@@ -177,13 +177,11 @@ public class CommandLauncher extends ComputerLauncher {
 
             LOGGER.info("agent launched for " + computer.getDisplayName());
         } catch (InterruptedException e) {
-            Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_abortedLaunch()));
+            Functions.printStackTrace(e, listener.error(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_abortedLaunch()));
         } catch (UnapprovedUsageException e) {
             listener.error(e.getMessage());
-        } catch (RuntimeException e) {
-            Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_unexpectedError()));
-        } catch (Error e) {
-            Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_unexpectedError()));
+        } catch (RuntimeException | Error e) {
+            Functions.printStackTrace(e, listener.error(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_unexpectedError()));
         } catch (IOException e) {
             Util.displayIOException(e, listener);
 
@@ -203,7 +201,7 @@ public class CommandLauncher extends ComputerLauncher {
                 try {
                     ProcessTree.get().killAll(_proc, _cookie);
                 } catch (InterruptedException x) {
-                    Functions.printStackTrace(x, listener.error(Messages.ComputerLauncher_abortedLaunch()));
+                    Functions.printStackTrace(x, listener.error(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_abortedLaunch()));
                 }
             }
         }
