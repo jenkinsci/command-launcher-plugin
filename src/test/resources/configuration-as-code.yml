@@ -1,0 +1,7 @@
+jenkins:
+  nodes:
+    - permanent:
+        name: "this-node-precisely"
+        launcher:
+          command:
+            command: "this is the command to start the agent"
