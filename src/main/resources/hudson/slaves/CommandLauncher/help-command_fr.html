@@ -1,22 +1,22 @@
 <div>
-  La commande à utiliser pour lancer un agent esclave, qui contrôle la
-  machine-esclave et communique avec la machine-maître.
+  La commande à utiliser pour lancer un agent agent, qui contrôle la
+  machine-agent et communique avec la machine-maître.
 
-  <h3>Les agents esclaves JNLP</h3>
+  <h3>Les agents agents JNLP</h3>
   <p>
-  Laissez ce champ vide si vous souhaitez lancer les esclaves par JNLP.
-  Avec cette configuration, la page d'information sur les esclaves
+  Laissez ce champ vide si vous souhaitez lancer les agents par JNLP.
+  Avec cette configuration, la page d'information sur les agents
   (jenkins/computer/***/) aura une icône de lancement JNLP. Vous pouvez
-  cliquer sur ce lien pour lancer un agent esclave par JNLP.
+  cliquer sur ce lien pour lancer un agent agent par JNLP.
   <p>
-  Ce mode est utile pour les esclaves Windows qui n'ont généralement pas
+  Ce mode est utile pour les agents Windows qui n'ont généralement pas
   de mécanisme d'exécution à distance.
 
-  <h3>Les agents esclaves ssh/rsh</h3>
+  <h3>Les agents agents ssh/rsh</h3>
   <p>
   Quand une commande est spécifiée dans ce champ, elle est exécutée
   sur le maître et Jenkins suppose que le programme exécuté lance le
-  programme <tt>agent.jar</tt> sur la bonne machine esclave.
+  programme <tt>agent.jar</tt> sur la bonne machine agent.
 
   <p>
   Une copie du <tt>agent.jar</tt> peut être téléchargée
@@ -27,10 +27,10 @@
   "ssh <i>hostname</i> java -jar ~/bin/agent.jar".
 
   Cela dit, il est généralement préférable d'écrire un petit script sur
-  l'esclave, comme celui qui suit, afin de gérer le répertoire
+  l'agent, comme celui qui suit, afin de gérer le répertoire
   d'installation de Java et/ou de agent.jar. Vous pouvez aussi
   positionner des variables d'environnement spécifiques à cette machine
-  esclave, comme le PATH.
+  agent, comme le PATH.
   
 <pre>
 #!/bin/sh
@@ -39,7 +39,7 @@ exec java -jar ~/bin/agent.jar
 
   <p>
   Vous pouvez utiliser n'importe quelle commande d'exécution d'un
-  process sur la machine-esclave, comme RSH, du moment que les
+  process sur la machine-agent, comme RSH, du moment que les
   sorties stdin/stdout de ce process sont au final connectées
   sur "java -jar ~/bin/agent.jar".
 
