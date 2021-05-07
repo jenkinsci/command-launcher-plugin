@@ -60,7 +60,7 @@ public class CommandConnector extends ComputerConnector {
     @Override
     public CommandLauncher launch(String host, TaskListener listener) throws IOException, InterruptedException {
         // no need to call ScriptApproval.using here; CommandLauncher.launch will do that
-        return new CommandLauncher(new EnvVars("SLAVE", host,"AGENT", host), command);
+        return new CommandLauncher(new EnvVars("SLAVE", host, "AGENT", host), command);
     }
 
     @Extension @Symbol("command")
