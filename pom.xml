@@ -8,10 +8,10 @@
         <relativePath />
     </parent>
     <artifactId>command-launcher</artifactId>
-    <version>1.6</version>
+    <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <properties>
-        <revision>1.6</revision>
+        <revision>1.7</revision>
         <changelist>-SNAPSHOT</changelist>
         <gitHubRepo>jenkinsci/command-launcher-plugin</gitHubRepo>
         <jenkins.version>2.190.3</jenkins.version>
@@ -30,7 +30,7 @@
         <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
         <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
         <url>https://github.com/${gitHubRepo}</url>
-        <tag>command-launcher-1.6</tag>
+        <tag>${scmTag}</tag>
     </scm>
     <repositories>
         <repository>
