@@ -1,6 +1,6 @@
 <div>
   Single command to launch an agent program, which controls the agent
-  computer and communicates with the master. Jenkins assumes that
+  computer and communicates with the controller. Jenkins assumes that
   the executed program launches the <code>agent.jar</code> program on the correct
   machine.
 
@@ -32,7 +32,7 @@ exec java -jar ~/bin/agent.jar
 
   <p>
     You can use any command to run a process on the agent machine, such as RSH,
-    as long as stdin/stdout of the process on the master will be connected to
+    as long as stdin/stdout of the process on the controller will be connected to
     those of <code>java -jar ~/bin/agent.jar</code> on the agent machine eventually.
   </p>
 
