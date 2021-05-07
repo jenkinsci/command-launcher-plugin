@@ -59,7 +59,7 @@ public class CommandLauncher extends ComputerLauncher {
 
     /**
      * Command line to launch the agent, like
-     * "ssh myslave java -jar /path/to/hudson-remoting.jar"
+     * "ssh my-agent java -jar /path/to/agent.jar"
      */
     private final String agentCommand;
 
@@ -138,7 +138,7 @@ public class CommandLauncher extends ComputerLauncher {
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(command));
             final EnvVars cookie = _cookie = EnvVars.createCookie();
             pb.environment().putAll(cookie);
-            pb.environment().put("WORKSPACE", StringUtils.defaultString(computer.getAbsoluteRemoteFs(), node.getRemoteFS())); //path for local slave log
+            pb.environment().put("WORKSPACE", StringUtils.defaultString(computer.getAbsoluteRemoteFs(), node.getRemoteFS())); //path for local agent log
 
             {// system defined variables
                 pb.environment().put("NODE_NAME", computer.getName());

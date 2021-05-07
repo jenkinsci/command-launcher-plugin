@@ -55,10 +55,10 @@ public class CommandLauncherTest {
     // TODO sometimes gets EOFException as in commandSucceedsWithoutChannel
     public void commandFails() throws Exception {
         assumeTrue(!Functions.isWindows());
-        DumbSlave slave = createSlaveTimeout("false");
+        DumbSlave agent = createAgentTimeout("false");
 
-        String log = slave.toComputer().getLog();
-        assertTrue(log, slave.toComputer().isOffline());
+        String log = agent.toComputer().getLog();
+        assertTrue(log, agent.toComputer().isOffline());
         assertThat(log, containsString("ERROR: Process terminated with exit code"));
         assertThat(log, not(containsString("ERROR: Process terminated with exit code 0")));
     }
@@ -67,16 +67,16 @@ public class CommandLauncherTest {
     @Test
     public void commandSucceedsWithoutChannel() throws Exception {
         assumeTrue(!Functions.isWindows());
-        DumbSlave slave = createSlaveTimeout("true");
+        DumbSlave agent = createAgentTimeout("true");
 
-        String log = slave.toComputer().getLog();
-        assertTrue(log, slave.toComputer().isOffline());
+        String log = agent.toComputer().getLog();
+        assertTrue(log, agent.toComputer().isOffline());
         assertThat(log, containsString("ERROR: Process terminated with exit code 0"));
     }
 
-    private static void connectToComputer(DumbSlave slave) {
+    private static void connectToComputer(DumbSlave agent) {
         try {
-            slave.toComputer().connect(false).get();
+            agent.toComputer().connect(false).get();
         } catch (Exception e) {
             System.err.println("uninteresting error (not running an actual agent.jar): " + e);
         }
@@ -120,10 +120,10 @@ public class CommandLauncherTest {
             command = posixCommand.format(args);
         }
 
-        DumbSlave slave = createSlave(command, workspacePath);
-        connectToComputer(slave);
+        DumbSlave agent = createAgent(command, workspacePath);
+        connectToComputer(agent);
         String content = new Scanner(canary).useDelimiter("\\Z").next();
-        j.jenkins.removeNode(slave);
+        j.jenkins.removeNode(agent);
         assertEquals(value, content);
     }
 
@@ -132,28 +132,28 @@ public class CommandLauncherTest {
         return tempDir.getAbsolutePath();
     }
 
-    public DumbSlave createSlave(String command, String workspacePath) throws Exception {
-        DumbSlave slave;
+    public DumbSlave createAgent(String command, String workspacePath) throws Exception {
+        DumbSlave agent;
         if (workspacePath == null)
             workspacePath = createWorkspace();
 
         synchronized (j.jenkins) { // TODO this lock smells like a bug post 1.607
-            slave = new DumbSlave("dummy", workspacePath, new CommandLauncher(command));
-            j.jenkins.addNode(slave);
+            agent = new DumbSlave("dummy", workspacePath, new CommandLauncher(command));
+            j.jenkins.addNode(agent);
         }
-        return slave;
+        return agent;
     }
 
-    public DumbSlave createSlaveTimeout(String command) throws Exception {
-        DumbSlave slave = createSlave(command, null);
+    public DumbSlave createAgentTimeout(String command) throws Exception {
+        DumbSlave agent = createAgent(command, null);
 
         try {
-            slave.toComputer().connect(false).get(1, TimeUnit.SECONDS);
-            fail("the slave was not supposed to connect successfully");
+            agent.toComputer().connect(false).get(1, TimeUnit.SECONDS);
+            fail("the agent was not supposed to connect successfully");
         } catch (ExecutionException e) {
             // ignore, we just want to
         }
 
-        return slave;
+        return agent;
     }
 }

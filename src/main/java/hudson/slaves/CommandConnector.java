@@ -38,7 +38,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
- * Executes a program on the master and expect that script to connect.
+ * Executes a program on the controller and expect that script to connect.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -60,7 +60,7 @@ public class CommandConnector extends ComputerConnector {
     @Override
     public CommandLauncher launch(String host, TaskListener listener) throws IOException, InterruptedException {
         // no need to call ScriptApproval.using here; CommandLauncher.launch will do that
-        return new CommandLauncher(new EnvVars("SLAVE", host), command);
+        return new CommandLauncher(new EnvVars("SLAVE", host,"AGENT", host), command);
     }
 
     @Extension @Symbol("command")
