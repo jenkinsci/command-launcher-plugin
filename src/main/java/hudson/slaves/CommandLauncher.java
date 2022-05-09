@@ -79,7 +79,7 @@ public class CommandLauncher extends ComputerLauncher {
         agentCommand = command;
         env = null;
         // TODO add withKey if we can determine the Slave.nodeName being configured
-        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser());
+        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser(), true);
     }
 
     /** Constructor for programmatic use. Always approves the script.
@@ -102,7 +102,7 @@ public class CommandLauncher extends ComputerLauncher {
     }
     
     private Object readResolve() {
-        ScriptApproval.get().configuring(agentCommand, SystemCommandLanguage.get(), ApprovalContext.create());
+        ScriptApproval.get().configuring(agentCommand, SystemCommandLanguage.get(), ApprovalContext.create(), true);
         return this;
     }
 
@@ -228,7 +228,7 @@ public class CommandLauncher extends ComputerLauncher {
             if(Util.fixEmptyAndTrim(value)==null)
                 return FormValidation.error(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_NoLaunchCommand());
             else
-                return ScriptApproval.get().checking(value, SystemCommandLanguage.get());
+                return ScriptApproval.get().checking(value, SystemCommandLanguage.get(), Jenkins.get().hasPermission(Jenkins.ADMINISTER));
         }
     }
 }
