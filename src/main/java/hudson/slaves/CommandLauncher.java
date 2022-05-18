@@ -23,6 +23,8 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -40,6 +42,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
@@ -48,6 +51,8 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
 import org.jenkinsci.plugins.scriptsecurity.scripts.languages.SystemCommandLanguage;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link ComputerLauncher} through a remote login mechanism like ssh/rsh.
@@ -79,7 +84,7 @@ public class CommandLauncher extends ComputerLauncher {
         agentCommand = command;
         env = null;
         // TODO add withKey if we can determine the Slave.nodeName being configured
-        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser(), true);
+        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser(), Stapler.getCurrentRequest() == null);
     }
 
     /** Constructor for programmatic use. Always approves the script.
@@ -220,15 +225,29 @@ public class CommandLauncher extends ComputerLauncher {
 
     @Extension @Symbol("command")
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
+
+        @Override
+        public ComputerLauncher newInstance(@Nullable StaplerRequest req, @NonNull JSONObject formData) throws FormException {
+            CommandLauncher instance = (CommandLauncher) super.newInstance(req, formData);
+            if (formData.get("oldCommand") != null) {
+                String oldCommand = formData.getString("oldCommand");
+                boolean approveIfAdmin = !StringUtils.equals(oldCommand, instance.agentCommand);
+                if (approveIfAdmin) {
+                    ScriptApproval.get().configuring(instance.agentCommand, SystemCommandLanguage.get(),
+                            ApprovalContext.create().withCurrentUser(), true);
+                }
+            }
+            return instance;
+        }
         public String getDisplayName() {
             return org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_displayName();
         }
 
-        public FormValidation doCheckCommand(@QueryParameter String value) {
+        public FormValidation doCheckCommand(@QueryParameter String value, @QueryParameter String oldCommand) {
             if(Util.fixEmptyAndTrim(value)==null)
                 return FormValidation.error(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_NoLaunchCommand());
             else
-                return ScriptApproval.get().checking(value, SystemCommandLanguage.get(), Jenkins.get().hasPermission(Jenkins.ADMINISTER));
+                return ScriptApproval.get().checking(value, SystemCommandLanguage.get(), !StringUtils.equals(value, oldCommand));
         }
     }
 }
