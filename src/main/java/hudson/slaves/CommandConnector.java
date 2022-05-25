@@ -23,12 +23,17 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
 import java.io.IOException;
+
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.command_launcher.Messages;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
@@ -36,6 +41,8 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.jenkinsci.plugins.scriptsecurity.scripts.languages.SystemCommandLanguage;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Executes a program on the controller and expect that script to connect.
@@ -49,11 +56,11 @@ public class CommandConnector extends ComputerConnector {
     public CommandConnector(String command) {
         this.command = command;
         // TODO add withKey if we can determine the Cloud.name being configured
-        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser());
+        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser(), Stapler.getCurrentRequest() == null);
     }
 
     private Object readResolve() {
-        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create());
+        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create(), true);
         return this;
     }
 
@@ -66,15 +73,29 @@ public class CommandConnector extends ComputerConnector {
     @Extension @Symbol("command")
     public static class DescriptorImpl extends ComputerConnectorDescriptor {
         @Override
+        public ComputerConnector newInstance(@Nullable StaplerRequest req, @NonNull JSONObject formData) throws FormException {
+            CommandConnector instance = (CommandConnector) super.newInstance(req, formData);
+            if (formData.get("oldCommand") != null) {
+                String oldCommand = formData.getString("oldCommand");
+                boolean approveIfAdmin = !StringUtils.equals(oldCommand, instance.command);
+                if (approveIfAdmin) {
+                    ScriptApproval.get().configuring(instance.command, SystemCommandLanguage.get(),
+                            ApprovalContext.create().withCurrentUser(), true);
+                }
+            }
+            return instance;
+        }
+
+        @Override
         public String getDisplayName() {
             return Messages.CommandLauncher_displayName();
         }
 
-        public FormValidation doCheckCommand(@QueryParameter String value) {
+        public FormValidation doCheckCommand(@QueryParameter String value, @QueryParameter String oldCommand) {
             if (Util.fixEmptyAndTrim(value) == null) {
                 return FormValidation.error(Messages.CommandLauncher_NoLaunchCommand());
             } else {
-                return ScriptApproval.get().checking(value, SystemCommandLanguage.get());
+                return ScriptApproval.get().checking(value, SystemCommandLanguage.get(), !StringUtils.equals(value, oldCommand));
             }
         }
 
