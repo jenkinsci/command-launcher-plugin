@@ -24,10 +24,10 @@
 
 package hudson.slaves;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlTextInput;
 import hudson.XmlFile;
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
