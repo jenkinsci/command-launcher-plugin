@@ -41,8 +41,12 @@ import java.util.Set;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
+import org.hamcrest.CustomTypeSafeMatcher;
+import org.hamcrest.Description;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval.PendingScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.languages.SystemCommandLanguage;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -54,12 +58,14 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+import static hudson.slaves.CommandLauncher2Test.PendingScriptApprovalMatcher.pendingScript;
+
 public class CommandLauncher2Test {
 
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
 
-    @Issue("SECURITY-478")
+    @Issue({"SECURITY-478", "SECURITY-3103"})
     @Test
     public void requireApproval() throws Exception {
         rr.addStep(new Statement() { // TODO .then, when using sufficiently new jenkins-test-harness
@@ -82,6 +88,9 @@ public class CommandLauncher2Test {
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertEquals("echo configured by GUI", ((CommandLauncher) s.getLauncher()).getCommand());
                 assertSerialForm(s, "echo configured by GUI");
+                assertThat(ScriptApproval.get().getPendingScripts(), contains(pendingScript("echo configured by GUI")));
+                ScriptApproval.get().getPendingScripts().clear(); // reset
+
                 // Then by REST.
                 String configDotXml = s.toComputer().getUrl() + "config.xml";
                 String xml = wc.goTo(configDotXml, "application/xml").getWebResponse().getContentAsString();
@@ -93,14 +102,19 @@ public class CommandLauncher2Test {
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertEquals("echo configured by REST", ((CommandLauncher) s.getLauncher()).getCommand());
                 assertSerialForm(s, "echo configured by REST");
+                assertThat(ScriptApproval.get().getPendingScripts(), contains(pendingScript("echo configured by REST")));
+                ScriptApproval.get().getPendingScripts().clear(); // reset
+
                 // Then by CLI.
                 CLICommand cmd = new UpdateNodeCommand();
                 cmd.setTransportAuth(User.get("admin").impersonate());
                 assertThat(new CLICommandInvoker(rr.j, cmd).withStdin(new StringInputStream(xml.replace("echo configured by GUI", "echo configured by CLI"))).invokeWithArgs("s"), CLICommandInvoker.Matcher.succeededSilently());
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertEquals("echo configured by CLI", ((CommandLauncher) s.getLauncher()).getCommand());
-                assertEquals(Collections.emptySet(), ScriptApproval.get().getPendingScripts());
                 assertSerialForm(s, "echo configured by CLI");
+                assertThat(ScriptApproval.get().getPendingScripts(), contains(pendingScript("echo configured by CLI")));
+                ScriptApproval.get().getPendingScripts().clear(); // reset
+
                 // Now verify that all modes failed as dev. First as GUI.
                 ScriptApproval.get().preapprove("echo configured by admin", SystemCommandLanguage.get());
                 s.setLauncher(new CommandLauncher("echo configured by admin"));
@@ -187,4 +201,27 @@ public class CommandLauncher2Test {
         });
     }
 
+    static class PendingScriptApprovalMatcher extends CustomTypeSafeMatcher<PendingScript> {
+
+        private final String expectedScript;
+
+        private PendingScriptApprovalMatcher(String expectedScript) {
+            super("PendingScript with script " + expectedScript);
+            this.expectedScript = expectedScript;
+        }
+
+        @Override
+        protected boolean matchesSafely(PendingScript item) {
+            return expectedScript.equals(item.script);
+        }
+
+        @Override
+        public void describeMismatchSafely(PendingScript item, Description mismatchDescription) {
+            mismatchDescription.appendText("has script ").appendText(item.script);
+        }
+
+        public static PendingScriptApprovalMatcher pendingScript(String expectedScript) {
+            return new PendingScriptApprovalMatcher(expectedScript);
+        }
+    }
 }

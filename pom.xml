@@ -47,6 +47,7 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-2.361.x</artifactId>
+                <!-- TODO when updating the bom check for script-security update and remove version override below -->
                 <version>2025.v816d28f1e04f</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -57,6 +58,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>script-security</artifactId>
+            <version>1265.va_fb_290b_4b_d34</version>
         </dependency>
         <dependency>
             <groupId>io.jenkins</groupId>
