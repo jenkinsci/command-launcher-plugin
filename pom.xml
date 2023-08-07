@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <artifactId>command-launcher</artifactId>
-    <version>${changelist}</version>
+    <version>100.${changelist}</version>
     <packaging>hpi</packaging>
     <properties>
         <changelist>999999-SNAPSHOT</changelist>
