@@ -13,7 +13,7 @@
     <properties>
         <changelist>999999-SNAPSHOT</changelist>
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
-        <jenkins.version>2.361.4</jenkins.version>
+        <jenkins.version>2.440.3</jenkins.version>
     </properties>
     <name>Command Agent Launcher Plugin</name>
     <description>Allows agents to be launched using a specified command.</description>
@@ -46,9 +46,8 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.361.x</artifactId>
-                <!-- TODO when updating the bom check for script-security update and remove version override below -->
-                <version>2025.v816d28f1e04f</version>
+                <artifactId>bom-2.440.x</artifactId>
+                <version>3234.v5ca_5154341ef</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -58,7 +57,6 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>script-security</artifactId>
-            <version>1265.va_fb_290b_4b_d34</version>
         </dependency>
         <dependency>
             <groupId>io.jenkins</groupId>
