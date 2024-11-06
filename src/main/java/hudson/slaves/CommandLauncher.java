@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.AbortException;
@@ -31,6 +32,7 @@ import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.Descriptor;
+import hudson.model.DescriptorVisibilityFilter;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -248,6 +250,25 @@ public class CommandLauncher extends ComputerLauncher {
                 return FormValidation.error(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_NoLaunchCommand());
             else
                 return ScriptApproval.get().checking(value, SystemCommandLanguage.get(), !StringUtils.equals(value, oldCommand));
+        }
+    }
+
+    @Extension
+    public static class DescriptorVisibilityFilterForceSandBox extends DescriptorVisibilityFilter {
+        @Override
+        public boolean filter(@CheckForNull Object context, @NonNull Descriptor descriptor) {
+            return (context instanceof DumbSlave && ((DumbSlave) context).getLauncher() instanceof CommandLauncher)
+                   || checkForceSandboxVisibility(descriptor);
+        }
+
+        @Override
+        public boolean filterType(@NonNull Class<?> contextClass, @NonNull Descriptor descriptor) {
+            return checkForceSandboxVisibility(descriptor);
+        }
+
+        private boolean checkForceSandboxVisibility(@NonNull Descriptor descriptor)
+        {
+            return !(descriptor instanceof DescriptorImpl && ScriptApproval.get().isForceSandboxForCurrentUser());
         }
     }
 }
