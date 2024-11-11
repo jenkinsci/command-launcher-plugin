@@ -33,6 +33,8 @@ public class CommandLauncherForceSandbox {
     public void configureTest() throws IOException {
         Jenkins.MANAGE.setEnabled(true);
 
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
         PermissionEntry adminPermission = new PermissionEntry(AuthorizationType.USER, "admin");
         PermissionEntry develPermission = new PermissionEntry(AuthorizationType.USER, "devel");
 
@@ -42,10 +44,7 @@ public class CommandLauncherForceSandbox {
         strategy.add(Jenkins.READ, adminPermission);
         strategy.add(Jenkins.MANAGE, develPermission);
         strategy.add(Jenkins.READ, develPermission);
-
         SlaveComputer.PERMISSIONS.getPermissions().forEach(p -> strategy.add(p,develPermission));
-
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(strategy);
     }
 
