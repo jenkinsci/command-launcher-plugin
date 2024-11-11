@@ -3,7 +3,6 @@ package hudson.slaves;
 import java.io.IOException;
 
 import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlRadioButtonInput;
 import org.jenkinsci.plugins.matrixauth.AuthorizationType;
 import org.jenkinsci.plugins.matrixauth.PermissionEntry;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
@@ -18,7 +17,6 @@ import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import static org.junit.Assert.assertEquals;
@@ -35,22 +33,19 @@ public class CommandLauncherForceSandbox {
     public void configureTest() throws IOException {
         Jenkins.MANAGE.setEnabled(true);
 
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        GlobalMatrixAuthorizationStrategy strategy = new GlobalMatrixAuthorizationStrategy();
-
         PermissionEntry adminPermission = new PermissionEntry(AuthorizationType.USER, "admin");
         PermissionEntry develPermission = new PermissionEntry(AuthorizationType.USER, "devel");
 
+        GlobalMatrixAuthorizationStrategy strategy = new GlobalMatrixAuthorizationStrategy();
         strategy.add(Jenkins.ADMINISTER, adminPermission);
         strategy.add(Jenkins.MANAGE, adminPermission);
         strategy.add(Jenkins.READ, adminPermission);
         strategy.add(Jenkins.MANAGE, develPermission);
         strategy.add(Jenkins.READ, develPermission);
 
-        for (Permission p : SlaveComputer.PERMISSIONS.getPermissions()) {
-            strategy.add(p, develPermission);
-        }
+        SlaveComputer.PERMISSIONS.getPermissions().forEach(p -> strategy.add(p,develPermission));
 
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(strategy);
     }
 
