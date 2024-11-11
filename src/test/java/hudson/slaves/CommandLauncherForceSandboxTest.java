@@ -24,7 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-public class CommandLauncherForceSandbox {
+public class CommandLauncherForceSandboxTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
