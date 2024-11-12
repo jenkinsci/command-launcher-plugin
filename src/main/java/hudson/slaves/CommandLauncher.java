@@ -101,12 +101,6 @@ public class CommandLauncher extends ComputerLauncher {
      * @param env       environment variables for the launcher to include when it runs the command
      */
     public CommandLauncher(String command, EnvVars env) {
-        try {
-            checkSandbox();
-        } catch (Descriptor.FormException ex) {
-            throw new RuntimeException(ex);
-        }
-
         this.agentCommand = command;
     	this.env = env;
         ScriptApproval.get().preapprove(command, SystemCommandLanguage.get());
@@ -305,11 +299,12 @@ public class CommandLauncher extends ComputerLauncher {
         }
 
         private boolean isCreatingNewObject() {
-            if (Stapler.getCurrentRequest() != null) {
-                List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
+            var req = Stapler.getCurrentRequest();
+            if (req != null) {
+                List<Ancestor> ancs = req.getAncestors();
                 for (Ancestor anc : ancs) {
                     if (anc.getObject() instanceof ComputerSet) {
-                        String uri = Stapler.getCurrentRequest().getOriginalRequestURI();
+                        String uri = req.getOriginalRequestURI();
                         if (uri.endsWith("createItem")) {
                             return true;
                         }
