@@ -128,7 +128,7 @@ public class CommandLauncher extends ComputerLauncher {
           if (ScriptApproval.get().isForceSandboxForCurrentUser()) {
               throw new Descriptor.FormException(
                       "This Launch Method requires scripts executions out of the sandbox."
-                      + " This Jenkins instance has been configured to not allow regular users to disable the sandbox", "sandbox");
+                      + " This Jenkins instance has been configured to not allow regular users to disable the sandbox", "command");
           }
       }
     
@@ -288,7 +288,7 @@ public class CommandLauncher extends ComputerLauncher {
         public boolean filter(@CheckForNull Object context, @NonNull Descriptor descriptor) {
             if(descriptor instanceof DescriptorImpl) {
                 return !ScriptApproval.get().isForceSandboxForCurrentUser() ||
-                       (context instanceof DumbSlave && ((DumbSlave) context).getLauncher() instanceof CommandLauncher);
+                       (context instanceof Slave && ((Slave) context).getLauncher() instanceof CommandLauncher);
             }
             return true;
         }
