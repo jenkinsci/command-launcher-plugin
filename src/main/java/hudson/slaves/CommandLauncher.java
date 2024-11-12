@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.AbortException;
@@ -30,7 +31,9 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
+import hudson.model.ComputerSet;
 import hudson.model.Descriptor;
+import hudson.model.DescriptorVisibilityFilter;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -39,6 +42,7 @@ import hudson.util.ProcessTree;
 import hudson.util.StreamCopyThread;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -49,6 +53,7 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
 import org.jenkinsci.plugins.scriptsecurity.scripts.languages.SystemCommandLanguage;
+import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
@@ -80,7 +85,8 @@ public class CommandLauncher extends ComputerLauncher {
      * @see #CommandLauncher(String command, EnvVars env)
      */
     @DataBoundConstructor
-    public CommandLauncher(String command) {
+    public CommandLauncher(String command) throws Descriptor.FormException {
+        checkSandbox();
         agentCommand = command;
         env = null;
         // TODO add withKey if we can determine the Slave.nodeName being configured
@@ -105,6 +111,18 @@ public class CommandLauncher extends ComputerLauncher {
         this.agentCommand = command;
         this.env = env;
     }
+
+    /**
+     * Check if the current user is forced to use the Sandbox when creating a new instance.
+     * In this case, we don't allow saving new instances of the CommandLauncher object by throwing a new exception
+     */
+    private void checkSandbox() throws Descriptor.FormException {
+          if (ScriptApproval.get().isForceSandboxForCurrentUser()) {
+              throw new Descriptor.FormException(
+                      "This Launch Method requires scripts executions out of the sandbox."
+                      + " This Jenkins instance has been configured to not allow regular users to disable the sandbox", "command");
+          }
+      }
     
     private Object readResolve() {
         ScriptApproval.get().configuring(agentCommand, SystemCommandLanguage.get(), ApprovalContext.create(), true);
@@ -248,6 +266,50 @@ public class CommandLauncher extends ComputerLauncher {
                 return FormValidation.error(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_NoLaunchCommand());
             else
                 return ScriptApproval.get().checking(value, SystemCommandLanguage.get(), !StringUtils.equals(value, oldCommand));
+        }
+    }
+
+    /**
+     * In case the flag
+     * {@link ScriptApproval#isForceSandboxForCurrentUser} is true, we don't show the {@link DescriptorImpl descriptor}
+     * for the current user, except if we are editing a node that already has the launcher {@link CommandLauncher}
+     */
+    @Extension
+    public static class DescriptorVisibilityFilterForceSandBox extends DescriptorVisibilityFilter {
+        @Override
+        public boolean filter(@CheckForNull Object context, @NonNull Descriptor descriptor) {
+            if(descriptor instanceof DescriptorImpl) {
+                return !ScriptApproval.get().isForceSandboxForCurrentUser() ||
+                       (context instanceof Slave && ((Slave) context).getLauncher() instanceof CommandLauncher);
+            }
+            return true;
+        }
+
+        @Override
+        public boolean filterType(@NonNull Class<?> contextClass, @NonNull Descriptor descriptor) {
+            if(descriptor instanceof DescriptorImpl)
+            {
+                //If we are creating a new object, check ScriptApproval.get().isForceSandboxForCurrentUser()
+                //If we are NOT creating a new object, return true, and delegate the logic to #filter
+                return !(isCreatingNewObject() && ScriptApproval.get().isForceSandboxForCurrentUser());
+            }
+            return true;
+        }
+
+        private boolean isCreatingNewObject() {
+            var req = Stapler.getCurrentRequest();
+            if (req != null) {
+                List<Ancestor> ancs = req.getAncestors();
+                for (Ancestor anc : ancs) {
+                    if (anc.getObject() instanceof ComputerSet) {
+                        String uri = req.getOriginalRequestURI();
+                        if (uri.endsWith("createItem")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
     }
 }
