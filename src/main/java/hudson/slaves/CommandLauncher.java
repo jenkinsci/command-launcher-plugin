@@ -100,7 +100,7 @@ public class CommandLauncher extends ComputerLauncher {
      *                  "sh -c" or write the expression into a script and point to the script)
      * @param env       environment variables for the launcher to include when it runs the command
      */
-    public CommandLauncher(String command, EnvVars env) throws Descriptor.FormException{
+    public CommandLauncher(String command, EnvVars env) throws Descriptor.FormException {
         checkSandbox();
         this.agentCommand = command;
     	this.env = env;
@@ -109,7 +109,7 @@ public class CommandLauncher extends ComputerLauncher {
 
     /** Constructor for use from {@link CommandConnector}. Never approves the script.
      * We don't execute the {@link #checkSandbox()} for backward compatibility, as this is just for running the Scripts
-     * */
+     */
     CommandLauncher(EnvVars env, String command) {
         this.agentCommand = command;
         this.env = env;
@@ -281,8 +281,7 @@ public class CommandLauncher extends ComputerLauncher {
     public static class DescriptorVisibilityFilterForceSandBox extends DescriptorVisibilityFilter {
         @Override
         public boolean filter(@CheckForNull Object context, @NonNull Descriptor descriptor) {
-            if(descriptor instanceof DescriptorImpl)
-            {
+            if(descriptor instanceof DescriptorImpl) {
                 return !ScriptApproval.get().isForceSandboxForCurrentUser() ||
                        (context instanceof DumbSlave && ((DumbSlave) context).getLauncher() instanceof CommandLauncher);
             }
