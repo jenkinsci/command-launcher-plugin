@@ -100,8 +100,13 @@ public class CommandLauncher extends ComputerLauncher {
      *                  "sh -c" or write the expression into a script and point to the script)
      * @param env       environment variables for the launcher to include when it runs the command
      */
-    public CommandLauncher(String command, EnvVars env) throws Descriptor.FormException {
-        checkSandbox();
+    public CommandLauncher(String command, EnvVars env) {
+        try {
+            checkSandbox();
+        } catch (Descriptor.FormException ex) {
+            throw new RuntimeException(ex);
+        }
+
         this.agentCommand = command;
     	this.env = env;
         ScriptApproval.get().preapprove(command, SystemCommandLanguage.get());
@@ -300,20 +305,18 @@ public class CommandLauncher extends ComputerLauncher {
         }
 
         private boolean isCreatingNewObject() {
-            boolean isCreating = false;
-
             if (Stapler.getCurrentRequest() != null) {
                 List<Ancestor> ancs = Stapler.getCurrentRequest().getAncestors();
                 for (Ancestor anc : ancs) {
-                    if (!isCreating && anc.getObject() instanceof ComputerSet) {
+                    if (anc.getObject() instanceof ComputerSet) {
                         String uri = Stapler.getCurrentRequest().getOriginalRequestURI();
                         if (uri.endsWith("createItem")) {
-                            isCreating = true;
+                            return true;
                         }
                     }
                 }
             }
-            return isCreating;
+            return false;
         }
     }
 }
