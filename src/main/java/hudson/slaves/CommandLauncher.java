@@ -101,14 +101,12 @@ public class CommandLauncher extends ComputerLauncher {
      * @param env       environment variables for the launcher to include when it runs the command
      */
     public CommandLauncher(String command, EnvVars env) {
-        this.agentCommand = command;
+    	this.agentCommand = command;
     	this.env = env;
         ScriptApproval.get().preapprove(command, SystemCommandLanguage.get());
     }
 
-    /** Constructor for use from {@link CommandConnector}. Never approves the script.
-     * We don't execute the {@link #checkSandbox()} for backward compatibility, as this is just for running the Scripts
-     */
+    /** Constructor for use from {@link CommandConnector}. Never approves the script. */
     CommandLauncher(EnvVars env, String command) {
         this.agentCommand = command;
         this.env = env;
