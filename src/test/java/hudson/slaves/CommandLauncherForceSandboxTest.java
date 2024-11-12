@@ -3,20 +3,19 @@ package hudson.slaves;
 import java.io.IOException;
 
 import org.htmlunit.html.HtmlForm;
-import org.jenkinsci.plugins.matrixauth.AuthorizationType;
-import org.jenkinsci.plugins.matrixauth.PermissionEntry;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
+import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
 import jenkins.model.Jenkins;
 
 import static org.junit.Assert.assertEquals;
@@ -35,16 +34,13 @@ public class CommandLauncherForceSandboxTest {
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
-        PermissionEntry adminPermission = new PermissionEntry(AuthorizationType.USER, "admin");
-        PermissionEntry develPermission = new PermissionEntry(AuthorizationType.USER, "devel");
+        MockAuthorizationStrategy strategy = new MockAuthorizationStrategy().
+           grant(Jenkins.ADMINISTER).everywhere().to("admin").
+           grant(Jenkins.MANAGE).everywhere().to("devel").
+           grant(Jenkins.READ, Computer.CONFIGURE).everywhere().to("devel");
 
-        GlobalMatrixAuthorizationStrategy strategy = new GlobalMatrixAuthorizationStrategy();
-        strategy.add(Jenkins.ADMINISTER, adminPermission);
-        strategy.add(Jenkins.MANAGE, adminPermission);
-        strategy.add(Jenkins.READ, adminPermission);
-        strategy.add(Jenkins.MANAGE, develPermission);
-        strategy.add(Jenkins.READ, develPermission);
-        SlaveComputer.PERMISSIONS.getPermissions().forEach(p -> strategy.add(p,develPermission));
+        SlaveComputer.PERMISSIONS.getPermissions().forEach(p -> strategy.grant(p).everywhere().to("devel"));
+
         j.jenkins.setAuthorizationStrategy(strategy);
     }
 
