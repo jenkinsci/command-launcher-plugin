@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.88</version>
+        <version>5.5</version>
         <relativePath />
     </parent>
     <artifactId>command-launcher</artifactId>
@@ -14,8 +14,8 @@
         <changelist>999999-SNAPSHOT</changelist>
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
         <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
-        <jenkins.baseline>2.452</jenkins.baseline>
-        <jenkins.version>${jenkins.baseline}.4</jenkins.version>
+        <jenkins.baseline>2.479</jenkins.baseline>
+        <jenkins.version>${jenkins.baseline}.1</jenkins.version>
     </properties>
     <name>Command Agent Launcher Plugin</name>
     <description>Allows agents to be launched using a specified command.</description>
@@ -49,7 +49,7 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-${jenkins.baseline}.x</artifactId>
-                <version>3654.v237e4a_f2d8da_</version>
+                <version>3850.vb_c5319efa_e29</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

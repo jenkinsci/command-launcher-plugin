@@ -42,7 +42,7 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.languages.SystemCommandLangu
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Executes a program on the controller and expect that script to connect.
@@ -56,7 +56,7 @@ public class CommandConnector extends ComputerConnector {
     public CommandConnector(String command) {
         this.command = command;
         // TODO add withKey if we can determine the Cloud.name being configured
-        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser(), Stapler.getCurrentRequest() == null);
+        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser(), Stapler.getCurrentRequest2() == null);
     }
 
     private Object readResolve() {
@@ -73,7 +73,7 @@ public class CommandConnector extends ComputerConnector {
     @Extension @Symbol("command")
     public static class DescriptorImpl extends ComputerConnectorDescriptor {
         @Override
-        public ComputerConnector newInstance(@Nullable StaplerRequest req, @NonNull JSONObject formData) throws FormException {
+        public ComputerConnector newInstance(@Nullable StaplerRequest2 req, @NonNull JSONObject formData) throws FormException {
             CommandConnector instance = (CommandConnector) super.newInstance(req, formData);
             if (formData.get("oldCommand") != null) {
                 String oldCommand = formData.getString("oldCommand");
