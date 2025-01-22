@@ -57,7 +57,7 @@ import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * {@link ComputerLauncher} through a remote login mechanism like ssh/rsh.
@@ -90,7 +90,7 @@ public class CommandLauncher extends ComputerLauncher {
         agentCommand = command;
         env = null;
         // TODO add withKey if we can determine the Slave.nodeName being configured
-        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser(), Stapler.getCurrentRequest() == null);
+        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser(), Stapler.getCurrentRequest2() == null);
     }
 
     /** Constructor for programmatic use. Always approves the script.
@@ -245,7 +245,7 @@ public class CommandLauncher extends ComputerLauncher {
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
 
         @Override
-        public ComputerLauncher newInstance(@Nullable StaplerRequest req, @NonNull JSONObject formData) throws FormException {
+        public ComputerLauncher newInstance(@Nullable StaplerRequest2 req, @NonNull JSONObject formData) throws FormException {
             CommandLauncher instance = (CommandLauncher) super.newInstance(req, formData);
             if (formData.get("oldCommand") != null) {
                 String oldCommand = formData.getString("oldCommand");
@@ -297,7 +297,7 @@ public class CommandLauncher extends ComputerLauncher {
         }
 
         private boolean isCreatingNewObject() {
-            var req = Stapler.getCurrentRequest();
+            var req = Stapler.getCurrentRequest2();
             if (req != null) {
                 List<Ancestor> ancs = req.getAncestors();
                 for (Ancestor anc : ancs) {
