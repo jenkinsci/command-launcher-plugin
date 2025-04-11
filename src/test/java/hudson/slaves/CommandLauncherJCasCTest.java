@@ -2,26 +2,27 @@ package hudson.slaves;
 
 import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
-import org.hamcrest.MatcherAssert;
+import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CommandLauncherJCasCTest {
-    @Rule
-    public JenkinsConfiguredWithCodeRule r = new JenkinsConfiguredWithCodeRule();
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@WithJenkinsConfiguredWithCode
+class CommandLauncherJCasCTest {
 
     @Test
     @ConfiguredWithCode("configuration-as-code.yml")
-    public void shouldBeAbleToSetupAgentWithCommandLauncher() throws Exception {
+    void shouldBeAbleToSetupAgentWithCommandLauncher(JenkinsConfiguredWithCodeRule r) {
         final DumbSlave agent = (DumbSlave) r.jenkins.getNode("this-node-precisely");
-        Assert.assertNotNull(agent);
+        assertNotNull(agent);
 
         final ComputerLauncher computerLauncher = agent.getLauncher();
-        MatcherAssert.assertThat(computerLauncher, Matchers.instanceOf(CommandLauncher.class));
+        assertThat(computerLauncher, Matchers.instanceOf(CommandLauncher.class));
         final CommandLauncher commandLauncher = (CommandLauncher) computerLauncher;
 
-        Assert.assertEquals("this is the command to start the agent", commandLauncher.getCommand());
+        assertEquals("this is the command to start the agent", commandLauncher.getCommand());
     }
 }
