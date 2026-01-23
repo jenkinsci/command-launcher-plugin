@@ -47,7 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
+import java.util.Objects;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
@@ -161,7 +161,7 @@ public class CommandLauncher extends ComputerLauncher {
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(command));
             final EnvVars cookie = _cookie = EnvVars.createCookie();
             pb.environment().putAll(cookie);
-            pb.environment().put("WORKSPACE", StringUtils.defaultString(computer.getAbsoluteRemoteFs(), node.getRemoteFS())); //path for local agent log
+            pb.environment().put("WORKSPACE", computer.getAbsoluteRemoteFs() != null ? computer.getAbsoluteRemoteFs() : node.getRemoteFS()); //path for local agent log
 
             {// system defined variables
                 pb.environment().put("NODE_NAME", computer.getName());
@@ -249,7 +249,7 @@ public class CommandLauncher extends ComputerLauncher {
             CommandLauncher instance = (CommandLauncher) super.newInstance(req, formData);
             if (formData.get("oldCommand") != null) {
                 String oldCommand = formData.getString("oldCommand");
-                boolean approveIfAdmin = !StringUtils.equals(oldCommand, instance.agentCommand);
+                boolean approveIfAdmin = !Objects.equals(oldCommand, instance.agentCommand);
                 if (approveIfAdmin) {
                     ScriptApproval.get().configuring(instance.agentCommand, SystemCommandLanguage.get(),
                             ApprovalContext.create().withCurrentUser(), true);
@@ -265,7 +265,7 @@ public class CommandLauncher extends ComputerLauncher {
             if(Util.fixEmptyAndTrim(value)==null)
                 return FormValidation.error(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_NoLaunchCommand());
             else
-                return ScriptApproval.get().checking(value, SystemCommandLanguage.get(), !StringUtils.equals(value, oldCommand));
+                return ScriptApproval.get().checking(value, SystemCommandLanguage.get(), !Objects.equals(value, oldCommand));
         }
     }
 
