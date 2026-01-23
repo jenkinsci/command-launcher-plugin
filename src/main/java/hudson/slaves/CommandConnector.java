@@ -33,7 +33,7 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
+import java.util.Objects;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.command_launcher.Messages;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
@@ -77,7 +77,7 @@ public class CommandConnector extends ComputerConnector {
             CommandConnector instance = (CommandConnector) super.newInstance(req, formData);
             if (formData.get("oldCommand") != null) {
                 String oldCommand = formData.getString("oldCommand");
-                boolean approveIfAdmin = !StringUtils.equals(oldCommand, instance.command);
+                boolean approveIfAdmin = !Objects.equals(oldCommand, instance.command);
                 if (approveIfAdmin) {
                     ScriptApproval.get().configuring(instance.command, SystemCommandLanguage.get(),
                             ApprovalContext.create().withCurrentUser(), true);
@@ -95,7 +95,7 @@ public class CommandConnector extends ComputerConnector {
             if (Util.fixEmptyAndTrim(value) == null) {
                 return FormValidation.error(Messages.CommandLauncher_NoLaunchCommand());
             } else {
-                return ScriptApproval.get().checking(value, SystemCommandLanguage.get(), !StringUtils.equals(value, oldCommand));
+                return ScriptApproval.get().checking(value, SystemCommandLanguage.get(), !Objects.equals(value, oldCommand));
             }
         }
 
