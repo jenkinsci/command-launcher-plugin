@@ -23,17 +23,19 @@
  */
 package hudson.slaves;
 
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import org.junit.Test;
-import org.junit.Rule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class CommandConnectorTest {
-    @Rule public JenkinsRule j = new JenkinsRule();
-    @Test public void configRoundtrip() throws Exception {
+@WithJenkins
+class CommandConnectorTest {
+
+    @Test
+    void configRoundtrip(JenkinsRule j) throws Exception {
         CommandConnector cc = new CommandConnector("abc def");
         j.assertEqualDataBoundBeans(cc,j.configRoundtrip(cc));
     }
