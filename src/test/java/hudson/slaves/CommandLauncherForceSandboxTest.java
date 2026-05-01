@@ -1,12 +1,9 @@
 package hudson.slaves;
 
-import java.io.IOException;
-
 import org.htmlunit.html.HtmlForm;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -17,19 +14,18 @@ import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import jenkins.model.Jenkins;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class CommandLauncherForceSandboxTest {
+@WithJenkins
+class CommandLauncherForceSandboxTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Before
-    public void configureTest() throws IOException {
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
         Jenkins.MANAGE.setEnabled(true);
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -45,7 +41,7 @@ public class CommandLauncherForceSandboxTest {
     }
 
     @Test
-    public void newCommandLauncher() throws Exception {
+    void newCommandLauncher() throws Exception {
         try (ACLContext ctx = ACL.as(User.getById("devel", true))) {
             //With forceSandbox enabled, nonadmin users should not create agents with Launcher = CommandLauncher
             ScriptApproval.get().setForceSandbox(true);
@@ -72,7 +68,7 @@ public class CommandLauncherForceSandboxTest {
     }
 
     @Test
-    public void editCommandLauncherUI_ForceSandboxTrue() throws Exception {
+    void editCommandLauncherUI_ForceSandboxTrue() throws Exception {
         ScriptApproval.get().setForceSandbox(true);
 
         DumbSlave commandLauncherAgent = new DumbSlave("commandLauncherAgent", "/", new CommandLauncher("echo unconfigured"));
@@ -109,7 +105,7 @@ public class CommandLauncherForceSandboxTest {
         }    }
 
     @Test
-    public void editCommandLauncherUI_ForceSandboxFalse() throws Exception {
+    void editCommandLauncherUI_ForceSandboxFalse() throws Exception {
         ScriptApproval.get().setForceSandbox(false);
 
         DumbSlave commandLauncherAgent = new DumbSlave("commandLauncherAgent", "/", new CommandLauncher("echo unconfigured"));
@@ -147,7 +143,7 @@ public class CommandLauncherForceSandboxTest {
     }
 
     @Test
-    public void createCommandLauncherUI_ForceSandboxTrue() throws Exception {
+    void createCommandLauncherUI_ForceSandboxTrue() throws Exception {
         ScriptApproval.get().setForceSandbox(true);
 
         try (WebClient wc = j.createWebClient().login("devel")) {
@@ -174,7 +170,7 @@ public class CommandLauncherForceSandboxTest {
     }
 
     @Test
-    public void createCommandLauncherUI_ForceSandboxFalse() throws Exception {
+    void createCommandLauncherUI_ForceSandboxFalse() throws Exception {
         ScriptApproval.get().setForceSandbox(false);
 
         try (WebClient wc = j.createWebClient().login("devel")) {
