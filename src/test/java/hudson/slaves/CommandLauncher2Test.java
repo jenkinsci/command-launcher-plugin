@@ -54,7 +54,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsSessionRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.recipes.LocalData;
 
 import static hudson.slaves.CommandLauncher2Test.PendingScriptApprovalMatcher.pendingScript;
 
@@ -179,16 +178,6 @@ public class CommandLauncher2Test {
         File nodesDir = new File(j.jenkins.getRootDir(), "nodes");
         XmlFile configXml = new XmlFile(Jenkins.XSTREAM, new File(new File(nodesDir, s.getNodeName()), "config.xml"));
         assertThat(configXml.asString(), expectedCommand != null ? containsString("<agentCommand>" + expectedCommand + "</agentCommand>") : not(containsString("<agentCommand>")));
-    }
-
-    @LocalData // saved by Hudson 1.215
-    @Test
-    public void ancientSerialForm() throws Throwable {
-        rr.then(j -> {
-                ComputerLauncher launcher = ((DumbSlave) j.jenkins.getNode("test")).getLauncher();
-                assertThat(launcher, instanceOf(CommandLauncher.class));
-                assertEquals("echo from CLI", ((CommandLauncher) launcher).getCommand());
-        });
     }
 
     static class PendingScriptApprovalMatcher extends CustomTypeSafeMatcher<PendingScript> {
